@@ -1,0 +1,147 @@
+unit Utama;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, StdCtrls, Grids, DBGrids, ExtCtrls;
+
+type
+  TFormUtama = class(TForm)
+    pnl1: TPanel;
+    lbl1: TLabel;
+    lbl2: TLabel;
+    lbl3: TLabel;
+    edt1: TEdit;
+    edt2: TEdit;
+    edt3: TEdit;
+    dbgrd1: TDBGrid;
+    btn1: TButton;
+    btn2: TButton;
+    btn3: TButton;
+    lbl4: TLabel;
+    procedure Simpan();
+    procedure Ubah();
+    procedure Hapus();
+    procedure Tampil();
+    procedure btn1Click(Sender: TObject);
+    procedure btn2Click(Sender: TObject);
+    procedure btn3Click(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  FormUtama: TFormUtama;
+
+implementation
+
+uses DataModul, MyAccess;
+
+{$R *.dfm}
+
+procedure TFormUtama.Tampil();
+begin
+  with dm.myqryTampil do
+  begin
+    Active:=False;
+    Close;
+    SQL.Clear;
+    SQL.Add('SELECT * FROM mahasiswa');
+    Active:=True;
+  end;
+end;
+
+procedure TFormUtama.Simpan();
+begin
+  try
+    dm.con1.StartTransaction;
+    with dm.myqryProses do
+    begin
+      Active:=False;
+      Close;
+      SQL.Clear;
+      SQL.Add('INSERT INTO mahasiswa(nim,nama,alamat) VALUES('+
+        QuotedStr(edt1.Text)+','+
+        QuotedStr(edt2.Text)+','+
+        QuotedStr(edt3.Text)+')');
+      ExecSQL;
+    end;
+    dm.con1.Commit;
+    ShowMessage('Berhasil');
+  except
+    dm.con1.Rollback;
+    ShowMessage('Gagal');
+  end;
+end;
+
+procedure TFormUtama.Ubah();
+begin
+  try
+    dm.con1.StartTransaction;
+    with dm.myqryProses do
+    begin
+      Active:=False;
+      Close;
+      SQL.Clear;
+      SQL.Add('UPDATE mahasiswa SET nama='+
+        QuotedStr(edt2.Text)+',alamat='+
+        QuotedStr(edt3.Text)+' WHERE nim='+
+        QuotedStr(edt1.Text));
+      ExecSQL;
+    end;
+    dm.con1.Commit;
+    ShowMessage('Berhasil');
+  except
+    dm.con1.Rollback;
+    ShowMessage('Gagal');
+  end;
+end;
+
+procedure TFormUtama.Hapus();
+begin
+  try
+    dm.con1.StartTransaction;
+    with dm.myqryProses do
+    begin
+      Connection:=dm.con1;
+      Close;
+      SQL.Clear;
+      SQL.Add('DELETE FROM mahasiswa WHERE nim='+QuotedStr(edt1.Text));
+      ExecSQL;
+    end;
+    dm.con1.Commit;
+    ShowMessage('Berhasil');
+  except
+    dm.con1.Rollback;
+    ShowMessage('Gagal');
+  end;
+end;
+
+procedure TFormUtama.btn1Click(Sender: TObject);
+begin
+  Simpan();
+  Tampil();
+end;
+
+procedure TFormUtama.btn2Click(Sender: TObject);
+begin
+  Ubah();  
+  Tampil();
+end;
+
+procedure TFormUtama.btn3Click(Sender: TObject);
+begin
+  Hapus();
+  Tampil();
+end;
+
+procedure TFormUtama.FormShow(Sender: TObject);
+begin      
+  Tampil();
+end;
+
+end.
